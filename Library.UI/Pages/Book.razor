@@ -1,0 +1,78 @@
+﻿@page "/book"
+
+@using Library.Application.Dtos.BookDtos;
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<h1>Books</h1>
+
+@if (loading)
+{
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+}
+else if (books == null || !books.Any())
+{
+    <MudAlert Severity="Severity.Error">No books found in your collection</MudAlert>
+}
+else
+{
+    <MudTable Items="@books.Take(4)" Hover="true">
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Title</MudTh>
+            <MudTh style="text-align: left;">Author Id</MudTh>  
+        </HeaderContent>
+        <RowTemplate>
+            @foreach (var book in books)
+            {
+                <MudTd>@book.Id</MudTd>
+                <MudTd>@book.Title</MudTd>
+                <MudTd style="text-align: left;">@book.AuthorId</MudTd>
+            }
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<BookDto> books = new();
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBooks();
+    }
+
+    private async Task LoadBooks()
+    {
+        try
+        {
+            loading = true;
+            books = await Http.GetFromJsonAsync<List<BookDto>>("api/Books") ?? new();
+        }
+        catch (Exception ex)
+        {
+            books = new();
+            Console.WriteLine($"Error loading books: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task DeleteBook(int id)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this book?"))
+        {
+            try
+            {
+                await Http.DeleteAsync($"api/Books/{id}");
+                await LoadBooks();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting book: {ex.Message}");
+            }
+        }
+    }
+}

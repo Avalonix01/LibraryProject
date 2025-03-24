@@ -1,0 +1,56 @@
+﻿@page "/author"
+@using Library.Application.Dtos.AuthorDtos;
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<h1>Authors</h1>
+
+@if (loading)
+{
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+}
+else if (authors == null || !authors.Any())
+{
+    <MudAlert Severity="Severity.Error">No authors found</MudAlert>
+}
+else
+{
+    <MudTable Items="@authors.Take(4)" Hover="true">
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Name</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="author">
+            <MudTd>@author.Id</MudTd>
+            <MudTd>@author.Name</MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<AuthorDto> authors = new();
+    private bool loading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAuthors();
+    }
+
+    private async Task LoadAuthors()
+    {
+        try
+        {
+            loading = true;
+            authors = await Http.GetFromJsonAsync<List<AuthorDto>>("api/Authors") ?? new();
+        }
+        catch (Exception ex)
+        {
+            authors = new();
+            Console.WriteLine($"Error loading authors: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}
