@@ -15,7 +15,7 @@ else if (authors == null || !authors.Any())
 }
 else
 {
-    <MudDataGrid Items="@authors.Take(4)" Filterable="true">
+    <MudDataGrid Items="@authors.Take(4)">
         <Columns>
             <PropertyColumn Property="x => x.Id" />
             <PropertyColumn Property="x => x.Name" />
