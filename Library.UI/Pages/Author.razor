@@ -15,16 +15,10 @@ else if (authors == null || !authors.Any())
 }
 else
 {
-    <MudTable Items="@authors.Take(4)" Hover="true">
-        <HeaderContent>
-            <MudTh>Id</MudTh>
-            <MudTh>Name</MudTh>
-        </HeaderContent>
-        <RowTemplate Context="author">
-            <MudTd>@author.Id</MudTd>
-            <MudTd>@author.Name</MudTd>
-        </RowTemplate>
-    </MudTable>
+    <MudDataGrid Items="@authors.Take(4)">
+        <Columns>
+            <PropertyColumn Property="x => x.Id" />
+            <PropertyColumn Property="x => x.Name" />
+        </Columns>
+    </MudDataGrid>
 }
-
-
