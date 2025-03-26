@@ -1,7 +1,7 @@
 using Library.Application.Dtos.AuthorDtos;
 using System.Net.Http.Json;
 
-namespace Library.UI.Pages
+namespace Library.UI.Components
 {
     public partial class Author
     {
@@ -11,6 +11,11 @@ namespace Library.UI.Pages
         protected override async Task OnInitializedAsync()
         {
             await LoadAuthors();
+        }
+
+        private async Task UpdateAuthor()
+        {
+
         }
 
         private async Task LoadAuthors()
