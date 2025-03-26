@@ -1,6 +1,5 @@
 ﻿using Library.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 
 namespace Library.Infrastructure.Data
 {

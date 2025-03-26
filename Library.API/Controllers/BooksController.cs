@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Library.Application.Interfaces;
-using Library.Application.Dtos;
-using System;
-using System.Threading.Tasks;
 using Library.Application.Dtos.BookDtos;
 
 namespace Library.API.Controllers

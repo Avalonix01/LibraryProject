@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Runtime.Serialization;
-
-namespace Library.Application.Dtos.BookDtos
+﻿namespace Library.Application.Dtos.BookDtos
 {
     public class BookDto
     {

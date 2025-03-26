@@ -1,6 +1,5 @@
 ﻿using Library.Application.Dtos.AuthorDtos;
 using Library.Application.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library.API.Controllers

@@ -15,10 +15,20 @@ else if (authors == null || !authors.Any())
 }
 else
 {
-    <MudDataGrid Items="@authors.Take(4)">
+    <MudDataGrid Items="@authors.Take(4)" Filterable="true">
         <Columns>
             <PropertyColumn Property="x => x.Id" />
             <PropertyColumn Property="x => x.Name" />
+            <TemplateColumn CellClass="d-flex justify-end">
+                <CellTemplate>
+                    <MudStack Row>
+                        <MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Delete</MudButton>
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
         </Columns>
+
     </MudDataGrid>
+
+
 }
