@@ -64,15 +64,14 @@ else
                 foreach (var book in books)
                 {
                     var author = authors.FirstOrDefault(a => a.Id == book.AuthorId);
-                    book.AuthorName = author?.Name ?? "Неизвестный автор";
+                    book.AuthorName = author?.Name ?? "Unknown author";
                 }
             }
         }
         catch (Exception ex)
         {
             books = new();
-            Snackbar.Add($"Ошибка загрузки книг: {ex.Message}", Severity.Error);
-            Console.WriteLine($"Ошибка загрузки книг: {ex.Message}");
+            Snackbar.Add($"Error while loading books: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -83,7 +82,7 @@ else
 
     private async Task ConfirmDelete(BookDto book)
     {
-        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Вы уверены, что хотите удалить книгу '{book.Title}'?");
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete '{book.Title}'?");
         if (confirmed)
         {
             await DeleteBook(book.Id);
@@ -99,17 +98,16 @@ else
             if (response.IsSuccessStatusCode)
             {
                 books.RemoveAll(b => b.Id == id);
-                Snackbar.Add("Книга успешно удалена", Severity.Success);
+                Snackbar.Add("Succesfully added book", Severity.Success);
             }
             else
             {
-                Snackbar.Add($"Ошибка удаления: {response.ReasonPhrase}", Severity.Error);
+                Snackbar.Add($"Error while deleting: {response.ReasonPhrase}", Severity.Error);
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Ошибка удаления книги: {ex.Message}", Severity.Error);
-            Console.WriteLine($"Ошибка удаления книги: {ex.Message}");
+            Snackbar.Add($"Error while deleting the book: {ex.Message}", Severity.Error);
         }
         finally
         {
