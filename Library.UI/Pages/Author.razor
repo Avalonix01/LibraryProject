@@ -1,0 +1,109 @@
+﻿@page "/author"
+@using Library.Application.Dtos.AuthorDtos;
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+
+<h1>Authors</h1>
+
+<MudPaper Class="pa-4 mb-4">
+	<MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Add">Add author</MudButton>
+</MudPaper>
+
+@if (loading)
+{
+	<MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+}
+else if (authors == null || !authors.Any())
+{
+	<MudAlert Severity="Severity.Error">Authors not found</MudAlert>
+}
+else
+{
+	<MudDataGrid Items="@authors" Filterable="true" SortMode="SortMode.Multiple" Hideable="true">
+		<Columns>
+			<PropertyColumn Property="x => x.Id" Title="ID" />
+			<PropertyColumn Property="x => x.Name" Title="Name" />
+			<TemplateColumn CellClass="d-flex justify-end">
+				<CellTemplate>
+					<MudStack Row>
+						<MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Info">Edit</MudButton>
+						<MudButton Size="@Size.Small" OnClick="(() => ConfirmDelete(context.Item))" Variant="@Variant.Filled" Color="@Color.Error">Delete</MudButton>
+					</MudStack>
+				</CellTemplate>
+			</TemplateColumn>
+		</Columns>
+		<PagerContent>
+			<MudDataGridPager />
+		</PagerContent>
+	</MudDataGrid>
+}
+
+
+@code {
+	private List<AuthorDto> authors = new();
+	private bool loading = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadAuthors();
+	}
+
+	private async Task LoadAuthors()
+	{
+		try
+		{
+			loading = true;
+			authors = await Http.GetFromJsonAsync<List<AuthorDto>>("api/Authors") ?? new();
+		}
+		catch (Exception ex)
+		{
+			authors = new();
+			Snackbar.Add($"Error loading authors: {ex.Message}", Severity.Error);
+			Console.WriteLine($"Error loading authors: {ex.Message}");
+		}
+		finally
+		{
+			loading = false;
+			StateHasChanged();
+		}
+	}
+
+	private async Task ConfirmDelete(AuthorDto author)
+	{
+		bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete author '{author.Name}'?");
+		if (confirmed)
+		{
+			await DeleteAuthor(author.Id);
+		}
+	}
+
+	private async Task DeleteAuthor(int id)
+	{
+		try
+		{
+			loading = true;
+			var response = await Http.DeleteAsync($"api/Authors/{id}");
+			if (response.IsSuccessStatusCode)
+			{
+				authors.RemoveAll(a => a.Id == id);
+				Snackbar.Add("Author successfully deleted", Severity.Success);
+			}
+			else
+			{
+				Snackbar.Add($"Error while (loading: {response.ReasonPhrase}", Severity.Error);
+			}
+		}
+		catch (Exception ex)
+		{
+			Snackbar.Add($"Error while deleting author: {ex.Message}", Severity.Error);
+			Console.WriteLine($"Error while deleting author: {ex.Message}");
+		}
+		finally
+		{
+			loading = false;
+			StateHasChanged();
+		}
+	}
+
+}

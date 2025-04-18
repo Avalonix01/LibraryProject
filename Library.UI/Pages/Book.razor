@@ -1,0 +1,117 @@
+﻿@page "/book"
+@using Library.Application.Dtos.BookDtos;
+@using Library.Application.Dtos.AuthorDtos;
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+
+<h1>Books</h1>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Add">Add book</MudButton>
+</MudPaper>
+
+@if (loading)
+{
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+}
+else if (books == null || !books.Any())
+{
+    <MudAlert Severity="Severity.Error">You dont have books</MudAlert>
+}
+else
+{
+    <MudDataGrid Items="@books" Filterable="true" SortMode="SortMode.Multiple" Hideable="true">
+        <Columns>
+            <PropertyColumn Property="x => x.Id" Title="ID" />
+            <PropertyColumn Property="x => x.Title" Title="Name" />
+            <PropertyColumn Property="x => x.AuthorId" Title="AuthorId" />
+            <TemplateColumn CellClass="d-flex justify-end">
+                <CellTemplate>
+                    <MudStack Row>
+                        <MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Info">Edit</MudButton>
+                        <MudButton Size="@Size.Small" OnClick="(() => ConfirmDelete(context.Item))" Variant="@Variant.Filled" Color="@Color.Error">Delete</MudButton>
+                    </MudStack>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager />
+        </PagerContent>
+    </MudDataGrid>
+}
+
+@code {
+    private List<BookDto> books = new();
+    private List<AuthorDto> authors = new();
+    private bool loading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBooks();
+    }
+
+    private async Task LoadBooks()
+    {
+        try
+        {
+            loading = true;
+            books = await Http.GetFromJsonAsync<List<BookDto>>("api/Books") ?? new();
+
+            if (books.Any() && authors.Any())
+            {
+                foreach (var book in books)
+                {
+                    var author = authors.FirstOrDefault(a => a.Id == book.AuthorId);
+                    book.AuthorName = author?.Name ?? "Unknown author";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            books = new();
+            Snackbar.Add($"Error while loading books: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ConfirmDelete(BookDto book)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete '{book.Title}'?");
+        if (confirmed)
+        {
+            await DeleteBook(book.Id);
+        }
+    }
+
+    private async Task DeleteBook(int id)
+    {
+        try
+        {
+            loading = true;
+            var response = await Http.DeleteAsync($"api/Books/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                books.RemoveAll(b => b.Id == id);
+                Snackbar.Add("Succesfully added book", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Error while deleting: {response.ReasonPhrase}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error while deleting the book: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+}
